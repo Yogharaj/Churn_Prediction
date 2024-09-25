@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Churn Prediction App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Churn Prediction App</h1>
+        
+        <h2>Train Models</h2>
+        <form id="trainForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="trainFiles">Select Datasets (CSV files):</label>
+                <input type="file" class="form-control-file" id="trainFiles" name="files" multiple required>
+            </div>
+            <button type="submit" class="btn btn-primary">Train Models</button>
+        </form>
+        <div id="trainResponse" class="mt-3"></div>
+
+        <hr>
+
+        <h2>Make Predictions</h2>
+        <form id="predictForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="datasetName">Dataset Name:</label>
+                <input type="text" class="form-control" id="datasetName" name="dataset_name" required>
+            </div>
+            <div class="form-group">
+                <label for="predictFile">Select Dataset for Prediction:</label>
+                <input type="file" class="form-control-file" id="predictFile" name="file" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Make Prediction</button>
+        </form>
+        <div id="predictResponse" class="mt-3"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#trainForm').on('submit', function (e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/train/',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $('#trainResponse').html('<div class="alert alert-success">Response: ' + JSON.stringify(data) + '</div>');
+                    },
+                    error: function (xhr) {
+                        $('#trainResponse').html('<div class="alert alert-danger">Error: ' + xhr.responseText + '</div>');
+                    }
+                });
+            });
+
+            $('#predictForm').on('submit', function (e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                formData.append('dataset_name', $('#datasetName').val()); 
+
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/predict/',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        $('#predictResponse').html('<div class="alert alert-success">Predictions: ' + JSON.stringify(data.predictions) + '</div>');
+                    },
+                    error: function (xhr) {
+                        $('#predictResponse').html('<div class="alert alert-danger">Error: ' + xhr.responseText + '</div>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
